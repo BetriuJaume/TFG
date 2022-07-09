@@ -471,7 +471,7 @@ Hem triat els arbres de decisió com a model alternatiu per la seva senzillesa i
 
 \subsection{Arbres de decisió}
 
-Els arbres de decisió son models d'aprenentatge automàtic que no pertanyen al subconjunt de l'aprenentatge profund. Són fàcils d'interpretar i d'utilitzar però no són competitius amb els models de deep learning quan tractem amb quantitats enormes de dades. En casos amb conjunts de dades més reduïts com el nostre, poden ser de gran utilitat.
+Els arbres de decisió son models d'aprenentatge automàtic que no pertanyen al subconjunt de l'aprenentatge profund. Són fàcils d'interpretar i d'utilitzar però no són competitius amb els models de deep learning quan tractem amb quantitats enormes de dades. Tot i així en casos amb conjunts de dades més reduïts com el nostre poden ser de gran utilitat.
 
 Els arbres es poden dividir en dues categories segons l'objectiu del problema a resoldre:
 \begin{itemize}
@@ -484,7 +484,69 @@ Els arbres es poden dividir en dues categories segons l'objectiu del problema a 
 
 En el nostre cas com que el nostre objectiu és predir si un pacient tindrà o no complicacions ens centrarem en els arbres de classificació. En essència el que fa un arbre de decisió és dividir l'espai predictor en $K$ nodes que anomenarem fulles i cada node es caracteritza per una sèrie de normes. La predicció que retornarà el model per un input concret que compleixi totes les normes d'un node serà la moda d'aquest en la mostra d'entrenament. Aquests models comencen des de dalt dividint l'espai de les observacions en dos de forma binaria utilitzant un dels predictors. Una vegada tenim l'espai dividit en dos fem el mateix per cada un dels nous nodes utilitzant un altre predictor i així successivament fins que arribem als nodes inferiors o fulles utilitzant un criteri de parada. El següent esquema il·lustra molt bé com podriem procedir amb les nostres deades i predictors:
 
-\includegraphics[scale=1]{}
+\includegraphics[width=12.5 cm, height = 8 cm]{decision_tree.png}
+
+
+En aquest exemple fictici (els resultats no estan basats en la mostra que tenim) veiem que la primera separació binaria es fa amb el predictor Weight el qual divideix la mostra en dos conjunts en funció de si el pes és inferior o superior a 165. La segona separació es fa en funció de si els pacients han patit o no problemes cardiovasculars utilitzant el predictor Heart diseases i obtenim els 4 nodes fulla de la part inferior de la figura. Cada un dels nodes conté un número $x$ de pacients de la mostra train. En el cas de, per exemple, el primer començant per l'esquerra tenim 15 pacients que no han tingut simptomatologia greu i 4 que sí complint que el seu pes és menor a 165 i no tenen un historial de malalties cardiovasculars. Per tant, si al nostre arbre li posem com a input un pacient amb un pes de 160 i sense historial de malalties cardiovasculars el model el classificaria com a 'No' ja que és la moda en el node fulla que li pertoca. Aquest arbre el podríem haver fet més profund considerant interaccions amb altres predictors com per exemple en gènere o l'edat.
+
+\subsubsection{Entrenament d'arbres de classificació}
+
+És evident doncs que ens agradaria dissenyar aquests arbres per tal que els nodes fulla fossin el més purs possibles en relació a la nostra variable a predir. És a dir, seria ideal obtenir nodes fulla tals que tots els seus elements hagin patit complicacions o no les hagin patit. Així, quan li posem a l'arbre un input nou i compleixi les condicions d'un dels nodes fulla que sigui pur, no hi haurà cap dubte de com classificar-lo ja que tots els exemples anteriors pertanyien a una categoria concreta. Per tant, seria força útil tenir això en compte a l'hora de dissenyar el model. El primer pas doncs, serà definir un amanera de quantificar com de pur és un node i com podem utilitzar aquesta informació per crear el millor model possible. Tenim diverses opcions depenent novament del nostre objectiu:
+
+\begin{itemize}
+    \item \textbf{Error quadràtic o suma dels residus al quadrat RSS:}
+    $$RSS = \sum _{i \in A_1}  (y_i - \bar{y}_{A_1})^2 +  \sum _{i \in A_2}  (y_i - \bar{y}_{A_2})^2$$
+    On $A_1$ és el primer node de la divisió binaria, $A_2$ és el segon node, les $\bar{y}$ són les mitjanes dels valors a predir prenent totes les observacions del node i $y_i$ son els valors reals de la variable resultat.
+    
+    Notem que una separació perfecte tindria $RSS = 0$ i a mida que aquest valor creix la separació és cada vegada més dolenta.
+    
+    \item \textbf{Index Gini:}
+    $$G = \sum ^C _{c=1} \hat{p}_{A_1 c} (1-\hat{p}_{A_1 c}) +  \sum ^C _{c=1} \hat{p}_{A_2 c} (1-\hat{p}_{A_2 c}) $$
+    
+    On $C$ és el nombre de possibles classes en les que volem classificar i $\hat{p}_{A_i c}$ és la proporció d'observacions en el node $A_i$ de la classe $c$. Novament en una separació en dos nodes completament purs $G = 0$ i en una separació en dos nodes completament impurs en una classificació binaria com la d'aquest projecte (és a dir: els nodes contenen la mateixa proporció de cada una de les classes) tenim:
+    $$G = 2 \cdot 0.5 \cdot (1-0.5) + 2 \cdot 0.5 \cdot (1-0.5) = 0.5$$
+\end{itemize}
+
+Per tal de fer la divisió més adient utilitzant el predictor més adient i el punt de tall optim el model cercarà entre tots els predictors diferents punts de tall per calcular les funcions de cost i elegirà a cada pas el predictor i el punt de tall que minimitzin aquesta funció ($RSS$ en cas de arbres de regressió i Gini en cas de classificació).
+
+\subsection{Arbres de decisió i sobreajustament}
+
+Arribats a aquest punt si continuéssim dividint els nodes podríem arribar a obtenir nodes fulla completament purs els quals només contindrien una sola observació. Aquest arbre tindria un rendiment perfecte a la mostra d'entrenament però estaria clarament sobre sobre-ajustat a aquesta mostra i no donaria bons resultats per noves observacions. Per tant, cal especificar un criteri de parada per tal que l'arbre no creixi massa profund. Dos bons criteris que s'acostumen a utilitzar junts són els següents:
+
+\begin{itemize}
+    \item Per una banda podem especificar un nombre mínim d'observacions que ha de tenir un node per tal de dividir-lo en dos nodes fills. Aquest valor dependrà molt de la quantitat de dades amb les que estiguem tractant ja que per conjunts més petits de dades és permeten valors més petits per aquest paràmetre.
+    \item Per altra banda podem definir una profunditat màxima que pot assolir l'arbre per tal d'estalviar-no complexitat 
+    \item També podem decidir no dividir un dels nodes en cas de que no millori el model de manera significativa. És a dir, el millor resultat obtingut en les funcions de cost és massa gran i no val la pena introduir complexitat al model per la poca recompensa que obtenim.
+\end{itemize}
+
+Aquestes estratègies acostumen a funcionar força bé però com ja hem dit la capacitat predictiva dels arbres és moderada. És per això que s'han proposat mètodes que combinen el resultat de diversos arbres de decisió per millorar el poder predictiu dels models.
+
+\subsection{Models Random Forest}
+
+Un d'aquests models que combinen l'output de diversos arbres és l'anomenat Random Forest. El principi fonamental darrere aquests algoritmes és utilitzar un conjunt de models mediocres per aconseguir un model molt més efectiu. Introduirem dues noves estratègies:
+
+\begin{itemize}
+
+\item La primera que utilitzarem per tal de reduir la variància és entrenar diferents arbres amb subconjunts de dades de la mostra d'entrenament i calcular la mitjana dels resultats de tots els arbres en cas d'arbres de regressió i la moda en cas de classificació.
+
+\item La segona estratègia que seguirem és que per cada una de les divisions de nodes que considerem fer dins dels arbres només considerem una mostra aleatòria d'entre el total dels nostres predictors de mida $m$. Per norma general si $p$ és el nombre total de predictors s'acostuma a prendre $m \approx \sqrt{p}$
+
+\end{itemize}
+
+El nombre d'arbres a entrenar encara és tema de discussió però tot indica que el rendiment empitjora al utilitzar massa arbres i per norma general provarem amb valors al voltant de $500$
+
+
+El següent esquema il·lustra molt bé com aquest algoritme a l'hora de fer prediccions:
+
+\includegraphics[width=12.5 cm, height = 13 cm]{RandomForest.png}
+
+
+
+
+
+
+
+
 
 
 
