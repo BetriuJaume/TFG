@@ -61,6 +61,12 @@
 \begin{document}
 
 \maketitle
+
+\section{Introducció i objectius del projecte}
+
+...............................
+
+
 \section{Intel·ligència artificial, \textit{machine learning} i \textit{deep learning}}
 Abans de parlar de \textit{deep learning}, neurones, xarxes neuronals, funcions d'activació... (nocions que més endavant estudiarem en profunditat) cal parlar del conjunt que engloba tots aquests conceptes: La intel·ligència artificial. 
 
@@ -341,7 +347,7 @@ Per tan, si volem calcular la derivada parcial de $L$ respecte $w^{[l]}_{jk}$ co
 
 $$ \frac{\partial L}{\partial w^{[l]}_{jk}} = \frac{\partial L}{\partial a^{[l]}_j} \cdot \frac{\partial a_j ^{[l]}}{\partial z^{[l]}_j} \cdot \frac{\partial z_j ^{[l]}}{\partial w^{[l]}_{jk}}$$
 
-Notem que per fer aquests càlculs cal saber els valors de $z^{[l]}$ i $a^{[l]} \ \forall l=1,\ldots,L$ que s'han calculat en el procés de calcular $a^[L ]$. Una vegada calculat el gradient podem recórrer a diferents mètodes iteratius per tal d'obtenir valors que minimitzin la funció de cost.
+Notem que per fer aquests càlculs cal saber els valors de $z^{[l]}$ i $a^{[l]} \ \forall l=1,\ldots,L$ que s'han calculat en el procés de calcular $a^ {[L]}$. Una vegada calculat el gradient podem recórrer a diferents mètodes iteratius per tal d'obtenir valors que minimitzin la funció de cost.
 
 \subsubsection{Algoritmes d'optimització}
 
@@ -507,11 +513,11 @@ En aquest exemple fictici (els resultats no estan basats en la mostra que tenim)
     $$G = 2 \cdot 0.5 \cdot (1-0.5) + 2 \cdot 0.5 \cdot (1-0.5) = 0.5$$
 \end{itemize}
 
-Per tal de fer la divisió més adient utilitzant el predictor més adient i el punt de tall optim el model cercarà entre tots els predictors diferents punts de tall per calcular les funcions de cost i elegirà a cada pas el predictor i el punt de tall que minimitzin aquesta funció ($RSS$ en cas de arbres de regressió i Gini en cas de classificació).
+Per tal de fer la divisió més adient utilitzant el predictor més adient i el punt de tall optim el model cercarà entre tots els predictors diferents punts de tall per calcular les funcions de cost i elegirà a cada pas el predictor i el punt de tall que minimitzin aquesta funció ($RSS$ en cas d'arbres de regressió i Gini en cas de classificació).
 
 \subsection{Arbres de decisió i sobreajustament}
 
-Arribats a aquest punt si continuéssim dividint els nodes podríem arribar a obtenir nodes fulla completament purs els quals només contindrien una sola observació. Aquest arbre tindria un rendiment perfecte a la mostra d'entrenament però estaria clarament sobre sobre-ajustat a aquesta mostra i no donaria bons resultats per noves observacions. Per tant, cal especificar un criteri de parada per tal que l'arbre no creixi massa profund. Dos bons criteris que s'acostumen a utilitzar junts són els següents:
+Arribats a aquest punt si continuéssim dividint els nodes podríem arribar a obtenir nodes fulla completament purs els quals només contindrien una sola observació. Aquest arbre tindria un rendiment perfecte a la mostra d'entrenament però estaria clarament sobre-ajustat a aquesta mostra i no donaria bons resultats per noves observacions. Per tant, cal especificar un criteri de parada per tal que l'arbre no creixi massa profund. Tres bons criteris que s'acostumen a utilitzar junts són els següents:
 
 \begin{itemize}
     \item Per una banda podem especificar un nombre mínim d'observacions que ha de tenir un node per tal de dividir-lo en dos nodes fills. Aquest valor dependrà molt de la quantitat de dades amb les que estiguem tractant ja que per conjunts més petits de dades és permeten valors més petits per aquest paràmetre.
@@ -538,7 +544,141 @@ El nombre d'arbres a entrenar encara és tema de discussió però tot indica que
 
 El següent esquema il·lustra molt bé com aquest algoritme a l'hora de fer prediccions:
 
-\includegraphics[width=12.5 cm, height = 13 cm]{RandomForest.png}
+\begin{center}
+\includegraphics[width=12.5 cm, height = 11 cm]{random_forest.png}
+\end{center}
+
+Els nodes amb el cercle blau dins representen el camí que ha seguit el pacient per cada un dels arbres fins a arribar al output. En el nostre cas, com que la variable que volem predir és binaria ens quedarem amb la moda de tots els outputs.
+
+\section{Introducció a la base de dades, objectius i anàlisi}
+
+La base de dades de la que disposem conté la informació de exactament $2283$ pacients de l'hospital clínic de Barcelona i, com ja hem exposat al principi de la memòria, el nostre objectiu és crear un algoritme de deep learning utilitzant xarxes neuronals capaç de predir la severitat dels símptomes del COVID-19 en pacients. Considerarem que un pacient positiu de COVID-19 ha patit símptomes severs de la malaltia en cas que hagi estat ingressat a la Unitat de Cures Intensives (UCI).
+
+\ 
+
+Les dades contenen informació dels pacients sobre els següents camps:
+
+\begin{enumerate}
+    \item \textbf{ID:} Número d'identificació del pacient.
+    \item \textbf{UCI:} Variable binària que indica si el pacient ha patit símptomes greus al contagiar-se de COVID-19.
+    \item \textbf{Age:} Edat del pacient.
+    \item \textbf{Gender:} Gènere del pacient.
+    \item \textbf{Size:} Talla del pacient.
+    \item \textbf{Weight:} Pes del pacient.
+    \item \textbf{Size\_mt:} Talla del pacient dividida entre 10.
+    \item \textbf{IMC:} Index de massa corporal.
+    \item \textbf{BW:} Pes del pacient al neixer.
+    \item \textbf{BW\_2500:} Variable binària que indica si el pacient va néixer amb un pes anormalment baix. Considerem un pes anormalment baix aquells pacients amb pesos iguals o inferiors a $2500$ grams.
+    \item \textbf{Percentil\_birth:} Percentil de naixement.
+    \item \textbf{IUGR\_calc:}  Variable binària que indica si el pacient ha patit Restricció del Creixement Intrauterí (Intrauterine Growth Restriction)
+    \item \textbf{Tobacco\_yes\_no:} Variable binària que indica si l'habit de fumar ha estat present en la vida del pacient.
+    \item \textbf{Hipertension:} Variable binària que indica si el pacient ha patit o pateix hipertensió.
+    \item \textbf{Heart\_diseases:} Variable binària que indica si el pacient ha patit o pateix malalties cardiovasculars.
+    \item \textbf{DM:} Variable binària que indica si el pacient ha patit o pateix diabetis.
+    \item \textbf{Dyslipidemia:} Variable binària que indica si el pacient ha patit o pateix dislipidèmia.
+    \item \textbf{Obesity:} Variable binària que indica si el pacient ha patit o pateix obesitat.
+    \item \textbf{Kidney\_disease:} Variable binària que indica si el pacient ha patit o pateix malalties relacionades amb els ronyons.
+    \item \textbf{Autoimmune:} Variable binària que indica si el pacient ha patit o pateix malalties de caràcter autoimmune.
+    \item \textbf{Cancer:} Variable binària que indica si el pacient ha patit o pateix algun tipus de càncer.
+    \item \textbf{Thyroid:} Variable binària que indica si el pacient ha patit o pateix malalties de tiroides.
+    \item \textbf{Infectious:} Variable binària que indica si el pacient ha patit o pateix malalties de caràcter infecciós.
+    \item \textbf{Psychiatric:} Variable binària que indica si el pacient ha patit o pateix malalties psiquiàtriques.
+\end{enumerate}
+
+Una vegada enumerats tots els nostre predictors ja podem començar amb l'exploració d'aquests. Començarem veient la distribució de l'edat i el pes:
+
+\ 
+
+\includegraphics[width=12.2 cm, height = 5 cm]{age_weight_dist.png}
+
+Podem veure que les dades estan força ben distribuïdes entre les edats de 25 i 65. Per tant, tenim una bona mostra estadística en relació a l'edat. En el cas del pes tenim una mitjana al voltant dels 70. Obtindrem més informació sobre aquesta variable dividint entre homes i dones. Farem el mateix amb el IMC:
+
+\ 
+
+\includegraphics[width=12.2 cm, height = 5 cm]{boxplot_weight_IMC.png}
+
+Com ja esperàvem, podem veure un augment en la variable pes en el cas del gènere masculí. Observem que la mitjana del pes en homes està per sobre del 80 kg que és una mica més alt que la mitjana de pes a Espanya. Aquest fenomen és degut a que la nostra base de dades recull una mostra d'edat mes avançada. El mateix passa amb el gènere femení. 
+
+\ 
+
+També volem estudiar les relacions que hi ha entre predictors i no només la relació dels predictors amb la variable a predir. Començarem explorant l'impacte que podria tenir en el pes durant l'edat adulta el fet d'haver patit complicacions durant l'embaràs com pot ser un pes anormalment baix o haver patit restricció del creixement intrauterí.
+
+\ 
+
+\includegraphics[width=12.2 cm, height = 5 cm]{boxplot_BW_IUGR.png}
+
+\ 
+
+Observem que aquells pacients que tenen un BW normal però que si que van patir IUGR tendeixen a tenir un pes més baix en l'etapa adulta. En el cas d'aquells pacients que no han patit IUGR aquells que van néixer amb un pes anormalment més baix tendeixen a tenir també un pes més baix a l'etapa adulta. En el cas dels que sí que ban néixer amb un pes inferior a $2500$ grams veiem que, sorprenentment, la mitjana del pes augmenta en els que van patir IUGR però no de forma significativa.
+
+\subsection{Impacte de les variables categòriques sobre la variable UCI}
+
+Vegem primer quina relació tenen les variables categòriques com Obesity o Psychiatric sobre la nostra variable a predir:
+
+\ 
+\includegraphics[width=12.2 cm, height = 17 cm]{categ_and_UCI.png}
+\ 
+
+Aquests gràfics ens mostren els percentatges dels pacients amb simptomatologia greu dividits en dues mostres segons la variable categòrica que apareix a la part inferior del gràfic.
+
+\ 
+
+Definirem tres categories diferents: Considerarem que una malaltia, una condició o un hàbit té un fort impacte en la probabilitat de patir conseqüències greus si el fet de patir-la, haver-la patit o haver practicat aquell hàbit fa que aquesta probabilitat sigui igual o superior a $0.15$. Considerarem que el predictor té un impacte moderat si la probabilitat es més petita que $0.15$ i més gran o igual que $0.08$. Finalment considerarem que no hi ha cap cap relació aparent, o en altres paraules no tenim evidencia estadística suficient d'una relació, si la probabilitat és més petita que $0.08$.
+
+Amb aquestes categories ben definides doncs podem extreure les següents conclusions:
+
+\begin{enumerate}
+    \item El \textbf{consum de tabac}, les \textbf{malalties de ronyons} i les \textbf{malalties infeccioses} tenen un \textbf{fort impacte} en la probabilitat de patir símptomes greus de la malaltia.
+    \item La \textbf{hipertensió}, la \textbf{diabetis}, la \textbf{obesitat}, el \textbf{càncer} i la \textbf{restricció del creixement intrauterí} tenen un \textbf{impacte moderat} en la probabilitat de patir símptomes greus de la malaltia.
+    \item No trobem una relació aparent entre la variable UCI i el fet d'haver patit o patir \textbf{malalties cardiovasculars}, \textbf{dislipidèmia}, \textbf{malalties autoimmunes}, \textbf{tiroides} i \textbf{malalties psiquiàtriques}.
+\end{enumerate}
+
+Per altra banda si analitzem les variables de pes al néixer i el gènere trobem dos fets força interessants:
+\begin{enumerate}
+    \item Un baix pes al néixer podria duplicar la probabilitat de patir símptomes greus.
+    \item Els homes son 5 vegades més propensos a patir simptomatologia greu.
+\end{enumerate}
+
+Cal tenir en compte que verificarem aquests enunciats utilitzant un mapa de correlacions més endavant per assegurar-nos que aquestes són estadísticament significatives.
+
+\subsection{Correlació entre les variables continues}
+
+Vegem, per ser exhaustius, la correlació entre les variables contínues amb un mapa de correlacions:
+
+\ 
+\includegraphics[width=12.2 cm, height = 7 cm]{corr_cont.png}
+\ 
+
+Trobem algunes relacions que ja esperàvem com:
+
+\begin{itemize}
+    \item \textbf{Weight} amb \textbf{Size}
+    \item \textbf{Weight} i \textbf{IMC}
+    \item \textbf{percentile\_birth} i el \textbf{BW}
+\end{itemize}
+
+\subsection{Chi test}
+
+Com ja hem dit ens agradaria tenir una manera de verificar els impactes de les variables categòriques sobre UCI. El candidat serà el chi-test de la llibreria scipy.stats que ens retornara els p-values de les relacions entre cada una de les variables i d'aquesta manera podrem afirmar si hi ha o no relació:
+
+Considerarem que un p-valor més petit de $0.05$ és suficient per rebutjar la hipòtesi nul·la i afirmar que les variables estan correlacionades:
+
+\includegraphics[width=12.2 cm, height = 9 cm]{p-values_heatmap.png}
+
+Aquest mapa ens confirma a la perfecció les hipòtesis de correlació que hem plantejat a la secció 7.1. Si ens fixem en els p-valors, aquells que son més grans que la cota que hem marcat son d'aquells predictors que hem intuït que no tenien cap relació aparent amb UCI. Per altra banda les variables que tenen un impacte fort o moderat son aquelles amb p-valors superiors a $0.05$. Per tant, podem dir que hem verificat estadísticament totes les nostres hipòtesis.
+
+\section{Resultats amb Random Forest}
+
+Per entrenar els models hem triat la llibreria H2O per la seva versatilitat i adaptabilitat als conjunts de dades que combinen dades categòriques i continues com és el nostre cas.
+
+
+
+
+
+
+
+
+
 
 
 
